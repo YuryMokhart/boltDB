@@ -49,12 +49,13 @@ func main() {
 			}
 			fmt.Printf("key=%x, value=%x\n~length = %d, group = %d\n", address, v, length, group)
 			result, _ := rlpDecode(input)
-			fmt.Printf("result = %x\ncapasity = %d\n", result,cap(result))
-			if cap(result)==2 || cap(result)==4{
-				fmt.Printf("val2 = %x\n",result[1])
+			fmt.Printf("result = %x\nlen = %d\n", result, len(result))
+			if len(result) == 2 || len(result) == 4 {
 				balance := new(big.Int)
 				balance = balance.SetBytes(result[1])
 				fmt.Printf("Balance = %d\n", balance)
+			}else {
+				fmt.Errorf("len(result) isn't 2 or 4")
 			}
 			return nil
 		})
