@@ -59,11 +59,11 @@ func main() {
 			if len(result) == 2 || len(result) == 4 {
 				balance = balance.SetBytes(result[1])
 				//fmt.Printf("Balance = %d\n", balance)
-			}else {
+			} else {
 				fmt.Errorf("len(result) isn't 2 or 4")
 			}
 
-			copy(address2[:],address)
+			copy(address2[:], address)
 
 			balanceSlice = append(balanceSlice, balance)
 			additionalAddress = append(additionalAddress, address2)
@@ -74,8 +74,8 @@ func main() {
 		var accounts Accounts = Accounts{len(balanceSlice), additionalAddress, balanceSlice}
 
 		sort.Sort(accounts)
-		for i := 0; i<100; i++	{
-		fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+		for i := 0; i < 100; i++ {
+			fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
 		}
 		return nil
 	})
@@ -86,9 +86,9 @@ func main() {
 	}
 }
 
-type Accounts struct{
+type Accounts struct {
 	length int
-	keys [][20]byte
+	keys   [][20]byte
 	values []*big.Int
 }
 
@@ -104,8 +104,6 @@ func (ac Accounts) Swap(i, j int) {
 	ac.values[i], ac.values[j] = ac.values[j], ac.values[i]
 	ac.keys[i], ac.keys[j] = ac.keys[j], ac.keys[i]
 }
-
-
 
 func rlpDecode(input []byte) (result [][]byte, err error) {
 	totalLength := len(input)
