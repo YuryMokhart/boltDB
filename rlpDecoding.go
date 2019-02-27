@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"math/big"
+	"sort"
 )
 
 func main() {
@@ -29,43 +30,82 @@ func main() {
 		b := tx.Bucket([]byte("AT"))
 		b2 := tx.Bucket([]byte("secure-key-"))
 
+		var balanceSlice []*big.Int
+		var additionalAddress [][20]byte
+		var address2 [20]byte
+
 		b.ForEach(func(k, v []byte) error {
 			address := b2.Get(k)
 			input := v
-			length := len(input)
-			groupVar := v[0]
-			var group int
+			//length := len(input)
+			//groupVar := v[0]
+			//var group int
+			balance := new(big.Int)
 
-			if groupVar < 0x80 {
-				group = 1
-			} else if groupVar >= 0x80 && groupVar < 0xb8 {
-				group = 2
-			} else if groupVar >= 0xb8 && groupVar < 0xc0 {
-				group = 3
-			} else if groupVar >= 0xc0 && groupVar < 0xf8 {
-				group = 4
-			} else if groupVar >= 0xf8 {
-				group = 5
-			}
-			fmt.Printf("key=%x, value=%x\n~length = %d, group = %d\n", address, v, length, group)
+			// if groupVar < 0x80 {
+			// 	group = 1
+			// } else if groupVar >= 0x80 && groupVar < 0xb8 {
+			// 	group = 2
+			// } else if groupVar >= 0xb8 && groupVar < 0xc0 {
+			// 	group = 3
+			// } else if groupVar >= 0xc0 && groupVar < 0xf8 {
+			// 	group = 4
+			// } else if groupVar >= 0xf8 {
+			// 	group = 5
+			// }
+			//fmt.Printf("key=%x, value=%x\n~length = %d, group = %d\n", address, v, length, group)
 			result, _ := rlpDecode(input)
-			fmt.Printf("result = %x\nlen = %d\n", result, len(result))
+			//fmt.Printf("result = %x\nlen = %d\n", result, len(result))
 			if len(result) == 2 || len(result) == 4 {
-				balance := new(big.Int)
 				balance = balance.SetBytes(result[1])
-				fmt.Printf("Balance = %d\n", balance)
+				//fmt.Printf("Balance = %d\n", balance)
 			}else {
 				fmt.Errorf("len(result) isn't 2 or 4")
 			}
+
+			copy(address2[:],address)
+
+			balanceSlice = append(balanceSlice, balance)
+			additionalAddress = append(additionalAddress, address2)
+
 			return nil
 		})
+
+		var accounts Accounts = Accounts{len(balanceSlice), additionalAddress, balanceSlice}
+
+		sort.Sort(accounts)
+		for i := 0; i<100; i++	{
+		fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+		}
 		return nil
 	})
+
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 }
+
+type Accounts struct{
+	length int
+	keys [][20]byte
+	values []*big.Int
+}
+
+func (ac Accounts) Len() int {
+	return ac.length
+}
+
+func (ac Accounts) Less(i, j int) bool {
+	return (ac.values[i]).Cmp(ac.values[j]) == 1
+}
+
+func (ac Accounts) Swap(i, j int) {
+	ac.values[i], ac.values[j] = ac.values[j], ac.values[i]
+	ac.keys[i], ac.keys[j] = ac.keys[j], ac.keys[i]
+}
+
+
 
 func rlpDecode(input []byte) (result [][]byte, err error) {
 	totalLength := len(input)
