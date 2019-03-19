@@ -5,11 +5,12 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"math/big"
+	"os"
 	"sort"
 )
 
 func main() {
-	db, err := bolt.Open("/home/yury/myData/geth/chaindata", 0600, &bolt.Options{ReadOnly: true})
+	db, err := bolt.Open("/Users/yurymokhart/Library/Ethereum/geth/chaindata", 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,10 +22,7 @@ func main() {
 			return nil
 		})
 	})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	check(err)
 
 	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("AT"))
@@ -37,28 +35,10 @@ func main() {
 		b.ForEach(func(k, v []byte) error {
 			address := b2.Get(k)
 			input := v
-			//length := len(input)
-			//groupVar := v[0]
-			//var group int
 			balance := new(big.Int)
-
-			// if groupVar < 0x80 {
-			// 	group = 1
-			// } else if groupVar >= 0x80 && groupVar < 0xb8 {
-			// 	group = 2
-			// } else if groupVar >= 0xb8 && groupVar < 0xc0 {
-			// 	group = 3
-			// } else if groupVar >= 0xc0 && groupVar < 0xf8 {
-			// 	group = 4
-			// } else if groupVar >= 0xf8 {
-			// 	group = 5
-			// }
-			//fmt.Printf("key=%x, value=%x\n~length = %d, group = %d\n", address, v, length, group)
 			result, _ := rlpDecode(input)
-			//fmt.Printf("result = %x\nlen = %d\n", result, len(result))
 			if len(result) == 2 || len(result) == 4 {
 				balance = balance.SetBytes(result[1])
-				//fmt.Printf("Balance = %d\n", balance)
 			} else {
 				fmt.Errorf("len(result) isn't 2 or 4")
 			}
@@ -74,12 +54,23 @@ func main() {
 		var accounts Accounts = Accounts{len(balanceSlice), additionalAddress, balanceSlice}
 
 		sort.Sort(accounts)
+
+		file, err := os.Create("accounts.txt")
+		check(err)
+		defer file.Close()
+
 		for i := 0; i < 100; i++ {
 			fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+			fmt.Fprintf(file, "address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+
 		}
+
 		return nil
 	})
+	check(err)
+}
 
+func check(err error) {
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -162,14 +153,6 @@ func rlpDecode(input []byte) (result [][]byte, err error) {
 			return nil, fmt.Errorf("Prefix value is bigger than 0xf8. It isn't supported")
 		}
 	}
-	// fmt.Printf("result from rlpDecode = %x\n", result)
-	// fmt.Printf("cap = %d\n", cap(result))
-	// if cap(result)==2 || cap(result)==4{
-	// 	fmt.Printf("val2 = %x\n",result[1])
-	// 	balance := new(big.Int)
-	// 	balance = balance.SetBytes(result[1])
-	// 	fmt.Println(balance)
-	// }
 	return
 }
 
