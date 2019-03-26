@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	// "github.com/wcharczuk/go-chart"
 	"log"
 	"math/big"
 	"os"
@@ -60,15 +61,40 @@ func main() {
 		defer file.Close()
 
 		for i := 0; i < 100; i++ {
-			fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
-			fmt.Fprintf(file, "address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
-
+			//fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+			//fmt.Fprintf(file, "address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
 		}
 
+		count := 0
+		var valueSlice []*big.Int
+		var countSlice []int
+		prevVal := accounts.values[0]
+		
+		for i , val := range accounts.values{
+			if (prevVal).Cmp(val) != 0{
+				valueSlice = append(valueSlice, prevVal)
+				countSlice = append(countSlice, count)
+				prevVal = val
+			}
+			count++
+			if i == len(accounts.values)-1{ //because otherwise it doesn't include the last element not equal to the previous
+				valueSlice = append(valueSlice, val)
+				countSlice = append(countSlice, count)
+			}
+		}
+		//fmt.Println(valueSlice)
+		//fmt.Println(countSlice)
+		// chartAccountBalances(countSlice, )
 		return nil
 	})
 	check(err)
 }
+
+// func chartAccountBalances() {
+// 	file, err := os.Create("chartAccountBalances.csv")
+// 	check(err)
+// 	defer file.Close()
+// }
 
 func check(err error) {
 	if err != nil {
@@ -88,7 +114,7 @@ func (ac Accounts) Len() int {
 }
 
 func (ac Accounts) Less(i, j int) bool {
-	return (ac.values[i]).Cmp(ac.values[j]) == 1
+	return (ac.values[i]).Cmp(ac.values[j]) == -1
 }
 
 func (ac Accounts) Swap(i, j int) {
