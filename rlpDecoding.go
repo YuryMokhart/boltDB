@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
-	// "github.com/wcharczuk/go-chart"
+	"github.com/wcharczuk/go-chart"
 	"log"
 	"math/big"
 	"os"
+	"io/ioutil"
 	"sort"
+	"bytes"
 )
 
 func main() {
@@ -69,7 +71,7 @@ func main() {
 		var valueSlice []*big.Int
 		var countSlice []int
 		prevVal := accounts.values[0]
-		
+
 		for i , val := range accounts.values{
 			if (prevVal).Cmp(val) != 0{
 				valueSlice = append(valueSlice, prevVal)
@@ -84,17 +86,53 @@ func main() {
 		}
 		//fmt.Println(valueSlice)
 		//fmt.Println(countSlice)
-		// chartAccountBalances(countSlice, )
+		chartAccountsBalances(countSlice, valueSlice)
 		return nil
 	})
 	check(err)
 }
 
-// func chartAccountBalances() {
-// 	file, err := os.Create("chartAccountBalances.csv")
-// 	check(err)
-// 	defer file.Close()
-// }
+func chartAccountsBalances(acc []int, bal []*big.Int) {
+	graph := chart.Chart{
+		XAxis: chart.XAxis{
+			Name: "wei",
+			NameStyle: chart.StyleShow(),
+			Style: chart.StyleShow(),
+			Range: chart.LogRange{
+				Min: bal[0],
+				Max: bal[len(bal)-1],
+			},
+			// ValueFormatter: func(v interface{}) string {
+			// 	return fmt.Sprintf("%f h", int(v.(float64)))
+			// },
+		},
+		YAxis: chart.YAxis{
+			Name: "number of accounts",
+			NameStyle: chart.StyleShow(),
+			Style: chart.StyleShow(),
+			// ValueFormatter: func(v interface{}) string {
+			// 	return fmt.Sprintf("%f h", int(v.(float64)))
+			// },
+		},
+		Series: []chart.Series{
+			chart.ContinuousSeries{
+				Style: chart.Style{
+					Show:        true,
+					StrokeColor: chart.ColorRed,
+					FillColor:   chart.ColorRed.WithAlpha(50),
+				},
+				XValues: bal,
+				YValues: acc,
+			},
+		},
+	}
+
+	buffer := bytes.NewBuffer([]byte{})
+	err := graph.Render(chart.PNG, buffer)
+	check(err)
+	err = ioutil.WriteFile("chartsss.PNG", buffer.Bytes(), 0644)
+	check(err)
+}
 
 func check(err error) {
 	if err != nil {
