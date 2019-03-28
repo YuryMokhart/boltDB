@@ -92,13 +92,25 @@ func main() {
 	check(err)
 }
 
-func chartAccountsBalances(acc []int, bal []*big.Int) {
+func chartAccountsBalances(accI []int, balanceI []*big.Int) {
+	//acc := float64(accI)
+	var acc []float64
+	var bal []float64
+	//bal := new(big.Float).SetInt(balanceI)
+	for _, temporary := range accI{
+		acc = append(acc, float64(temporary))
+	}
+	for _, temporary := range balanceI{
+		f := new(big.Float).SetInt(temporary)
+		f64, _ := f.Float64()
+		bal = append(bal, f64)
+	}
 	graph := chart.Chart{
 		XAxis: chart.XAxis{
 			Name: "wei",
 			NameStyle: chart.StyleShow(),
 			Style: chart.StyleShow(),
-			Range: chart.LogRange{
+			Range: &chart.LogRange{
 				Min: bal[0],
 				Max: bal[len(bal)-1],
 			},
@@ -130,7 +142,7 @@ func chartAccountsBalances(acc []int, bal []*big.Int) {
 	buffer := bytes.NewBuffer([]byte{})
 	err := graph.Render(chart.PNG, buffer)
 	check(err)
-	err = ioutil.WriteFile("chartsss.PNG", buffer.Bytes(), 0644)
+	err = ioutil.WriteFile("output.PNG", buffer.Bytes(), 0644)
 	check(err)
 }
 
