@@ -112,17 +112,11 @@ func chartAccountsBalances(accI []int, balanceI []*big.Int) {
 				Min: bal[0],
 				Max: bal[len(bal)-1],
 			},
-			// ValueFormatter: func(v interface{}) string {
-			// 	return fmt.Sprintf("%f h", int(v.(float64)))
-			// },
 		},
 		YAxis: chart.YAxis{
 			Name: "number of accounts",
 			NameStyle: chart.StyleShow(),
 			Style: chart.StyleShow(),
-			// ValueFormatter: func(v interface{}) string {
-			// 	return fmt.Sprintf("%f h", int(v.(float64)))
-			// },
 		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{
