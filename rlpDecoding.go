@@ -93,10 +93,8 @@ func main() {
 }
 
 func chartAccountsBalances(accI []int, balanceI []*big.Int) {
-	//acc := float64(accI)
 	var acc []float64
 	var bal []float64
-	//bal := new(big.Float).SetInt(balanceI)
 	for _, temporary := range accI{
 		acc = append(acc, float64(temporary))
 	}
