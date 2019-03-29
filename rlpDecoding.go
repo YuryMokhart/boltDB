@@ -112,6 +112,18 @@ func chartAccountsBalances(accI []int, balanceI []*big.Int) {
 				Min: bal[0],
 				Max: bal[len(bal)-1],
 			},
+			Ticks: []chart.Tick{
+				{Value: 0.0, Label: "0"},
+				{Value: 1e3, Label: "1e3"},
+				{Value: 1e6, Label: "1e6"},
+				{Value: 1e9, Label: "1e9"},
+				{Value: 1e12, Label: "1e12"},
+				{Value: 1e15, Label: "1e15"},
+				{Value: 1e18, Label: "1e18"},
+				{Value: 1e21, Label: "1e21"},
+				{Value: 1e24, Label: "1e24"},
+				{Value: 1e25, Label: "1e25"},
+			},
 		},
 		YAxis: chart.YAxis{
 			Name: "number of accounts",
