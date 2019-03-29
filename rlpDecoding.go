@@ -58,14 +58,14 @@ func main() {
 
 		sort.Sort(accounts)
 
-		file, err := os.Create("accounts.txt")
-		check(err)
-		defer file.Close()
+		// file, err := os.Create("accounts.txt")
+		// check(err)
+		// defer file.Close()
 
-		for i := 0; i < 100; i++ {
-			//fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
-			//fmt.Fprintf(file, "address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
-		}
+		// for i := 0; i < 100; i++ {
+		// 	//fmt.Printf("address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+		// 	//fmt.Fprintf(file, "address = %x  balance = %d\n", accounts.keys[i], accounts.values[i])
+		// }
 
 		count := 0
 		var valueSlice []*big.Int
