@@ -96,11 +96,14 @@ func chartAccountsBalances(accI []int, balanceI []*big.Int) {
 	var acc []float64
 	var bal []float64
 	for _, temporary := range accI{
-		acc = append(acc, float64(temporary))
+		acc = append(acc, float64(temporary)/1e6)
 	}
 	for _, temporary := range balanceI{
 		f := new(big.Float).SetInt(temporary)
 		f64, _ := f.Float64()
+		if f64 > 1e24{
+			continue
+		}
 		bal = append(bal, f64)
 	}
 	graph := chart.Chart{
@@ -122,13 +125,22 @@ func chartAccountsBalances(accI []int, balanceI []*big.Int) {
 				{Value: 1e18, Label: "1e18"},
 				{Value: 1e21, Label: "1e21"},
 				{Value: 1e24, Label: "1e24"},
-				{Value: 1e25, Label: "1e25"},
 			},
 		},
 		YAxis: chart.YAxis{
-			Name: "number of accounts",
+			Name: "number of accounts, million",
 			NameStyle: chart.StyleShow(),
 			Style: chart.StyleShow(),
+			GridMajorStyle: chart.Style{
+				Show:        true,
+				StrokeColor: chart.DefaultStrokeColor,
+				StrokeWidth: 1.0,
+			},
+			GridMinorStyle: chart.Style{
+				Show:        true,
+				StrokeColor: chart.DefaultStrokeColor,
+				StrokeWidth: 1.0,
+			},
 		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{
