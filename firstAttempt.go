@@ -41,16 +41,27 @@ func main() {
 		return nil
 	})
 
-	// db.Update(func(tx *bolt.Tx) error{
-	// 	b := tx.CreateBucket([]byte("DelBucket"))
-	// 	err := b.Put([]byte("DelKey"), []byte("DelVal"))
-	// 	return err
-	// 	})
+	db.Update(func(tx *bolt.Tx) error{
+		b, err := tx.CreateBucket([]byte("DelBucket"))
+		if err != nil{
+			return fmt.Errorf("Create Bucket %s\n", err)
+		}
+		err = b.Put([]byte("DelKey"), []byte("DelVal"))
+		return nil
+		})
 
-	// db.View(func(tx *bolt.Tx)error{
-	// 	b := tx.Bucket([]byte("DelBucket"))
-	// 	v := b.Get([]byte("DelKey"))
-	// 	fmt.Println(string(v))
-	// 	return nil
-	// 	})
+	db.View(func(tx *bolt.Tx)error{
+		b := tx.Bucket([]byte("DelBucket"))
+		v := b.Get([]byte("DelKey"))
+		fmt.Println(string(v))
+		return nil
+	})
+
+	db.Update(func(tx *bolt.Tx)error{
+		err := tx.DeleteBucket([]byte("DelBucket"))
+		if err != nil{
+			return fmt.Errorf("Bucket wasn't deleted.")
+		}
+		return nil
+	})
 }
