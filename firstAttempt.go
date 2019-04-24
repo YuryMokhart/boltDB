@@ -14,7 +14,7 @@ func main() {
 	defer db.Close()
 
 	key := []byte("firstKey")
-	value := []byte("creativeSecondValue")
+	value := []byte("creativeFirstValue")
 
 	db.Update(func(tx *bolt.Tx) error{
 		b, err := tx.CreateBucket([]byte("FirstBucket"))
@@ -50,15 +50,33 @@ func main() {
 		return nil
 		})
 
-	db.View(func(tx *bolt.Tx)error{
+	db.View(func(tx *bolt.Tx) error{
 		b := tx.Bucket([]byte("DelBucket"))
 		v := b.Get([]byte("DelKey"))
 		fmt.Println(string(v))
 		return nil
 	})
 
-	db.Update(func(tx *bolt.Tx)error{
+	db.View(func (tx *bolt.Tx) error{
+		b := tx.Bucket([]byte("FirstBucket"))
+
+		c := b.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next(){
+			fmt.Printf("key = %s, value = %s\n", k, v)
+		}
+		return nil
+	})
+
+	db.Update(func(tx *bolt.Tx) error{
 		err := tx.DeleteBucket([]byte("DelBucket"))
+		if err != nil{
+			return fmt.Errorf("Bucket wasn't deleted.")
+		}
+		return nil
+	})
+	db.Update(func(tx *bolt.Tx) error{
+		err := tx.DeleteBucket([]byte("FirstBucket"))
 		if err != nil{
 			return fmt.Errorf("Bucket wasn't deleted.")
 		}
