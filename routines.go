@@ -60,17 +60,9 @@ func output(db *bolt.DB) {
 		db.View(func(tx *bolt.Tx) error {
 			c := tx.Bucket([]byte("Sequence")).Cursor()
 
-			// var avg float64
-			// count := 0
 			for k, v := c.First(); k != nil; k, v = c.Next() {
-				// count++
-				// spval, _ := strconv.ParseFloat(v, 64)
-				// avg = avg + spval
-				//fmt.Printf("Key = %x, Value = %x\n", k, v)
 				copy(valBytes[:], v)
 			}
-			// avg = avg/float64(count)
-			// fmt.Println(avg)
 			return nil
 		})
 		fmt.Printf("Last value: %x\n", valBytes)
