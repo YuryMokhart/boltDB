@@ -3,9 +3,20 @@ package main
 import (
 	"fmt"
 	"net"
+	"flag"
 )
 
 func main() {
+	flagMode := flag.String("mode", "server", "start in server or client mode")
+	flag.Parse()
+	if *flagMode == "server"{
+		server()
+	} else {
+		client()
+	}
+}
+
+func server() {
 	tcpAddress, err := net.ResolveTCPAddr("tcp", "127.0.0.1:9999")
 	if err != nil {
 		fmt.Println("tcpAddress error")
@@ -16,6 +27,7 @@ func main() {
 		fmt.Println("Listener error")
 		panic(err)
 	}
+	defer listener.Close()
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
@@ -23,6 +35,14 @@ func main() {
 			panic(err)
 		}
 		go processConnection(conn)
+	}
+}
+
+func client() {
+	tcpAddress, err := net.ResolveTCPAddr("tcp", "127.0.0.1:9999")
+	if err != nil {
+		fmt.Println("tcpAddress error")
+		panic(err)
 	}
 	conn, err := net.DialTCP("tcp", nil, tcpAddress)
 	if err != nil {
@@ -38,10 +58,10 @@ func main() {
 
 func processConnection(conn *net.TCPConn){
 
-	var msg []byte
+	msg := make([]byte, 10)
 	readmsg, err := conn.Read(msg)
 	if err != nil {
 		fmt.Println("Error reading ", err.Error())
 	}
-	fmt.Println("Recieved message is ", readmsg)
+	fmt.Println("Recieved message length is ", readmsg)
 }
