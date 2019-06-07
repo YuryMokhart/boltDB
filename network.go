@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"flag"
+	"encoding/binary"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 	flag.Parse()
 	if *flagMode == "server"{
 		server()
-	} else {
+	} else if *flagMode == "client"{
 		client()
 	}
 }
@@ -49,7 +50,12 @@ func client() {
 		fmt.Println("DialTCP error")
 		panic(err)
 	}
-	_, err = conn.Write([]byte ("Hello"))
+	message := "Hello"
+	//fmt.Println(len(message))
+	mSlice := make([]byte, len(message))
+	binary.BigEndian.PutUint32(mSlice[0:], uint32(len(message)))
+	fmt.Printf("%x\n", mSlice)
+	_, err = conn.Write(mSlice)
 	if err != nil {
 		fmt.Println("Writing error")
 		panic(err)
@@ -59,9 +65,43 @@ func client() {
 func processConnection(conn *net.TCPConn){
 
 	msg := make([]byte, 10)
-	readmsg, err := conn.Read(msg)
+	_, err := conn.Read(msg)
 	if err != nil {
 		fmt.Println("Error reading ", err.Error())
 	}
-	fmt.Println("Recieved message length is ", readmsg)
+	fmt.Println("Recieved message is ", msg)
+	n := binary.BigEndian.Uint32(msg[0:])
+	decodedMsg := make([]byte, 10)
+	for i := 0; i <= int(n); i++{ // int(n) to be changed
+		_, err := conn.Read(decodedMsg)
+		if err != nil {
+			fmt.Println("Error reading ", err.Error())
+		}
+	}
+	//fmt.Println("Recieved message length is ", readMsgLength)
+	//fmt.Println("Recieved message is ", msg)
+	fmt.Println("Decoded message lenght = ", n)
+	fmt.Println("Decoded message  = ", decodedMsg)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
