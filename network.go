@@ -51,37 +51,34 @@ func client() {
 		panic(err)
 	}
 	message := "Hello"
-	//fmt.Println(len(message))
-	mSlice := make([]byte, len(message))
+	mSlice := make([]byte, 4)
 	binary.BigEndian.PutUint32(mSlice[0:], uint32(len(message)))
-	fmt.Printf("%x\n", mSlice)
 	_, err = conn.Write(mSlice)
 	if err != nil {
 		fmt.Println("Writing error")
 		panic(err)
 	}
+	_, err = conn.Write([]byte(message))
+	if err != nil {
+		fmt.Println("Writing error")
+		panic(err)
+	}
+
 }
 
 func processConnection(conn *net.TCPConn){
-
-	msg := make([]byte, 10)
+	msg := make([]byte, 4)
 	_, err := conn.Read(msg)
 	if err != nil {
 		fmt.Println("Error reading ", err.Error())
 	}
-	fmt.Println("Recieved message is ", msg)
 	n := binary.BigEndian.Uint32(msg[0:])
-	decodedMsg := make([]byte, 10)
-	for i := 0; i <= int(n); i++{ // int(n) to be changed
-		_, err := conn.Read(decodedMsg)
-		if err != nil {
-			fmt.Println("Error reading ", err.Error())
-		}
+	decMsg := make([]byte, n)
+	_, err = conn.Read(decMsg)
+	if err != nil {
+		fmt.Println("Error reading ", err.Error())
 	}
-	//fmt.Println("Recieved message length is ", readMsgLength)
-	//fmt.Println("Recieved message is ", msg)
-	fmt.Println("Decoded message lenght = ", n)
-	fmt.Println("Decoded message  = ", decodedMsg)
+	fmt.Printf("--Decoded message  = %s\n", decMsg)
 }
 
 
