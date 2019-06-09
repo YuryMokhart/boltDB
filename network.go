@@ -63,7 +63,6 @@ func client() {
 		fmt.Println("Writing error")
 		panic(err)
 	}
-
 }
 
 func processConnection(conn *net.TCPConn){
