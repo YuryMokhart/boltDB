@@ -6,6 +6,7 @@ import (
 	"flag"
 	"encoding/binary"
 	"os"
+	"io"
 )
 
 func main() {
@@ -52,6 +53,9 @@ func client() {
 		fmt.Println("DialTCP error")
 		panic(err)
 	}
+
+	//defer conn.Close()
+
 	message := "Hello"
 	mSlice := make([]byte, 4)
 	binary.BigEndian.PutUint32(mSlice[0:], uint32(len(message)))
@@ -71,23 +75,30 @@ func client() {
 		fmt.Println("File size reading error")
 		panic(err)
 	}
-	fmt.Printf("%s\n",fileSizeSlice)
-	n := binary.BigEndian.Uint64(fileSizeSlice[0:])
-	receivedFile := make([]byte, n)
-	_, err = conn.Read(receivedFile)
-	if err != nil {
-		panic(err)
-	}
-	//fmt.Printf("recieved file = %s\n",receivedFile)
+	//fmt.Printf("fileSizeSlice = %d\n",fileSizeSlice)
+	fileSize := binary.BigEndian.Uint64(fileSizeSlice[0:])
+	fmt.Printf("n = %d\n", fileSize)
+	// fmt.Printf("recieved file = %b\n",receivedFile)
 	newFile, err := os.Create("deliriumTWO.txt")
 	if err != nil {
 		fmt.Println ("File creating error")
 		panic(err)
 	}
-	_, err = newFile.Write(receivedFile)
-	if err != nil {
+	//defer newFile.Close()
+
+	receivedFile := make([]byte, fileSize)
+	var receivedBytes uint64
+	for {
+		if receivedBytes >= fileSize {
+			break
+		}
+		n, err := conn.Read(receivedFile)
+		if err != nil{
 		panic(err)
 	}
+		receivedBytes += uint64(n)
+	}
+	newFile.Write(receivedFile)
 }
 
 func processConnection(conn *net.TCPConn) {
@@ -97,12 +108,13 @@ func processConnection(conn *net.TCPConn) {
 		fmt.Println("Error reading ", err.Error())
 	}
 	n := binary.BigEndian.Uint32(msg[0:])
+	//fmt.Printf("n = %d\n", n)
 	decMsg := make([]byte, n)
 	_, err = conn.Read(decMsg)
 	if err != nil {
 		fmt.Println("Error reading ", err.Error())
 	}
-	fmt.Printf("--Decoded message  = %s\n", decMsg)
+	fmt.Printf("Message = %s\n", decMsg)
 }
 
 func sendFile(conn *net.TCPConn) {
@@ -126,14 +138,17 @@ func sendFile(conn *net.TCPConn) {
 		fmt.Println("File writing error")
 		panic(err)
 	}
-	// _, err = conn.Write([]byte(fileInfo.Name()))
-	// if err != nil {
-	// 	fmt.Println("File name writing error")
-	// 	panic(err)
-	// }
+	buffer := make([]byte, 1024)
+	for {
+		_, err = file.Read(buffer)
+		if err == io.EOF{
+			break
+		}
+		conn.Write(buffer)
+	}
 }
 
-
+ 
 
 
 
