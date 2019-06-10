@@ -5,6 +5,7 @@ import (
 	"net"
 	"flag"
 	"encoding/binary"
+	"os"
 )
 
 func main() {
@@ -36,6 +37,7 @@ func server() {
 			panic(err)
 		}
 		go processConnection(conn)
+		go sendFile(conn)
 	}
 }
 
@@ -63,9 +65,32 @@ func client() {
 		fmt.Println("Writing error")
 		panic(err)
 	}
+	fileSizeSlice := make([]byte, 8)
+	_, err = conn.Read(fileSizeSlice)
+	if err != nil {
+		fmt.Println("File size reading error")
+		panic(err)
+	}
+	fmt.Printf("%s\n",fileSizeSlice)
+	n := binary.BigEndian.Uint64(fileSizeSlice[0:])
+	receivedFile := make([]byte, n)
+	_, err = conn.Read(receivedFile)
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Printf("recieved file = %s\n",receivedFile)
+	newFile, err := os.Create("deliriumTWO.txt")
+	if err != nil {
+		fmt.Println ("File creating error")
+		panic(err)
+	}
+	_, err = newFile.Write(receivedFile)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func processConnection(conn *net.TCPConn){
+func processConnection(conn *net.TCPConn) {
 	msg := make([]byte, 4)
 	_, err := conn.Read(msg)
 	if err != nil {
@@ -80,7 +105,33 @@ func processConnection(conn *net.TCPConn){
 	fmt.Printf("--Decoded message  = %s\n", decMsg)
 }
 
-
+func sendFile(conn *net.TCPConn) {
+	file, err := os.Create("deliriumONE.txt")
+	if err != nil{
+		fmt.Println("File error ", err.Error())
+		panic(err)
+	}
+	err = os.Truncate("deliriumONE.txt", 8192)
+	if err != nil {
+		fmt.Println("Truncate error ", err.Error())
+	}
+	fileInfo, err := file.Stat()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileSizeSlice := make([]byte, 8)
+	binary.BigEndian.PutUint64(fileSizeSlice[0:], uint64(fileInfo.Size()))
+	_, err = conn.Write(fileSizeSlice)
+	if err != nil {
+		fmt.Println("File writing error")
+		panic(err)
+	}
+	// _, err = conn.Write([]byte(fileInfo.Name()))
+	// if err != nil {
+	// 	fmt.Println("File name writing error")
+	// 	panic(err)
+	// }
+}
 
 
 
