@@ -77,8 +77,7 @@ func client() {
 	}
 	//fmt.Printf("fileSizeSlice = %d\n",fileSizeSlice)
 	fileSize := binary.BigEndian.Uint64(fileSizeSlice[0:])
-	fmt.Printf("n = %d\n", fileSize)
-	// fmt.Printf("recieved file = %b\n",receivedFile)
+	//fmt.Printf("file size = %d\n", fileSize)
 	newFile, err := os.Create("deliriumTWO.txt")
 	if err != nil {
 		fmt.Println ("File creating error")
@@ -92,10 +91,10 @@ func client() {
 		if receivedBytes >= fileSize {
 			break
 		}
-		n, err := conn.Read(receivedFile)
-		if err != nil{
-		panic(err)
-	}
+		n, err := conn.Read(receivedFile[receivedBytes:])
+		if err != nil {
+			panic(err)
+		}
 		receivedBytes += uint64(n)
 	}
 	newFile.Write(receivedFile)
@@ -139,12 +138,21 @@ func sendFile(conn *net.TCPConn) {
 		panic(err)
 	}
 	buffer := make([]byte, 1024)
+	// var count int
 	for {
-		_, err = file.Read(buffer)
+		nReadFromFile, err := file.Read(buffer)
 		if err == io.EOF{
 			break
 		}
-		conn.Write(buffer)
+		//nWritten,
+		_, err = conn.Write(buffer[nReadFromFile:])
+		if err != nil {
+			panic(err)
+		}
+		// count += nWritten
+		// if int64(count) >= fileInfo.Size(){
+		// 	break
+		// }
 	}
 }
 
