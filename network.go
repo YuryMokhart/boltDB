@@ -138,21 +138,23 @@ func sendFile(conn *net.TCPConn) {
 		panic(err)
 	}
 	buffer := make([]byte, 1024)
-	// var count int
+	var count int
 	for {
+		//fmt.Println("count 1 = ", count)
+		if int64(count) >= fileInfo.Size(){
+			break
+		}
 		nReadFromFile, err := file.Read(buffer)
+		//fmt.Println(nReadFromFile)
 		if err == io.EOF{
 			break
 		}
-		//nWritten,
-		_, err = conn.Write(buffer[nReadFromFile:])
+		nWritten, err := conn.Write(buffer[nReadFromFile:])
 		if err != nil {
 			panic(err)
 		}
-		// count += nWritten
-		// if int64(count) >= fileInfo.Size(){
-		// 	break
-		// }
+		count += nWritten
+		//fmt.Println("count 2 = ", count)
 	}
 }
 
