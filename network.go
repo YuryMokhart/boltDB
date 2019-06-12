@@ -70,7 +70,7 @@ func client() {
 		panic(err)
 	}
 	fileSizeSlice := make([]byte, 8)
-	_, err = conn.Read(fileSizeSlice)
+	_, err = io.ReadFull(conn, fileSizeSlice)
 	if err != nil {
 		fmt.Println("File size reading error")
 		panic(err)
@@ -89,11 +89,11 @@ func client() {
 		if receivedBytes >= fileSize {
 			break
 		}
-		n, err := conn.Read(receivedFile)
+		n, err := io.ReadFull(conn, receivedFile)
 		if err == io.EOF {
 			break
 		}
-		_, err = newFile.Write(receivedFile)
+		_, err = newFile.Write(receivedFile[:n])
 		if err != nil {
 			panic(err)
 		}
