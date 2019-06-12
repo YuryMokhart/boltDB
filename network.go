@@ -90,6 +90,9 @@ func client() {
 			break
 		}
 		n, err := conn.Read(receivedFile)
+		if err == io.EOF {
+			break
+		}
 		_, err = newFile.Write(receivedFile)
 		if err != nil {
 			panic(err)
