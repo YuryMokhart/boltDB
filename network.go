@@ -99,7 +99,7 @@ func client() {
 	}
 	_, err = newFile.Write(receivedFile)
 	if err != nil {
-
+		panic(err)
 	}
 }
 
