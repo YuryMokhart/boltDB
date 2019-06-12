@@ -83,23 +83,18 @@ func client() {
 	}
 	defer newFile.Close()
 
-	receivedFile := make([]byte, fileSize)
+	receivedFile := make([]byte, 1024)
 	var receivedBytes uint64
-	buffer := make([]byte, 1024)
 	for {
 		if receivedBytes >= fileSize {
 			break
 		}
-		n, err := conn.Read(buffer)
+		n, err := conn.Read(receivedFile)
+		_, err = newFile.Write(receivedFile)
 		if err != nil {
 			panic(err)
 		}
-		_ = copy(receivedFile[receivedBytes:], buffer)
 		receivedBytes += uint64(n)
-	}
-	_, err = newFile.Write(receivedFile)
-	if err != nil {
-		panic(err)
 	}
 }
 
