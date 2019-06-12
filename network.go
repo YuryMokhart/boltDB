@@ -54,7 +54,7 @@ func client() {
 		panic(err)
 	}
 
-	//defer conn.Close()
+	defer conn.Close()
 
 	message := "Hello"
 	mSlice := make([]byte, 4)
@@ -75,29 +75,32 @@ func client() {
 		fmt.Println("File size reading error")
 		panic(err)
 	}
-	//fmt.Printf("fileSizeSlice = %d\n",fileSizeSlice)
 	fileSize := binary.BigEndian.Uint64(fileSizeSlice[0:])
-	//fmt.Printf("file size = %d\n", fileSize)
 	newFile, err := os.Create("deliriumTWO.txt")
 	if err != nil {
 		fmt.Println ("File creating error")
 		panic(err)
 	}
-	//defer newFile.Close()
+	defer newFile.Close()
 
 	receivedFile := make([]byte, fileSize)
 	var receivedBytes uint64
+	buffer := make([]byte, 1024)
 	for {
 		if receivedBytes >= fileSize {
 			break
 		}
-		n, err := conn.Read(receivedFile[receivedBytes:])
+		n, err := conn.Read(buffer)
 		if err != nil {
 			panic(err)
 		}
+		_ = copy(receivedFile[receivedBytes:], buffer)
 		receivedBytes += uint64(n)
 	}
-	newFile.Write(receivedFile)
+	_, err = newFile.Write(receivedFile)
+	if err != nil {
+
+	}
 }
 
 func processConnection(conn *net.TCPConn) {
@@ -107,7 +110,6 @@ func processConnection(conn *net.TCPConn) {
 		fmt.Println("Error reading ", err.Error())
 	}
 	n := binary.BigEndian.Uint32(msg[0:])
-	//fmt.Printf("n = %d\n", n)
 	decMsg := make([]byte, n)
 	_, err = conn.Read(decMsg)
 	if err != nil {
@@ -122,6 +124,10 @@ func sendFile(conn *net.TCPConn) {
 		fmt.Println("File error ", err.Error())
 		panic(err)
 	}
+	defer file.Close()
+	b := []byte("Blah-Blah")
+	file.Write(b)
+	file.Seek(0,0)
 	err = os.Truncate("deliriumONE.txt", 8192)
 	if err != nil {
 		fmt.Println("Truncate error ", err.Error())
@@ -140,21 +146,18 @@ func sendFile(conn *net.TCPConn) {
 	buffer := make([]byte, 1024)
 	var count int
 	for {
-		//fmt.Println("count 1 = ", count)
 		if int64(count) >= fileInfo.Size(){
 			break
 		}
 		nReadFromFile, err := file.Read(buffer)
-		//fmt.Println(nReadFromFile)
 		if err == io.EOF{
 			break
 		}
-		nWritten, err := conn.Write(buffer[nReadFromFile:])
+		nWritten, err := conn.Write(buffer[:nReadFromFile])
 		if err != nil {
 			panic(err)
 		}
 		count += nWritten
-		//fmt.Println("count 2 = ", count)
 	}
 }
 
