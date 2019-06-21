@@ -89,7 +89,7 @@ func client() {
 		if receivedBytes >= fileSize {
 			break
 		}
-		n, err := io.ReadFull(conn, receivedFile)
+		n, err := conn.Read(receivedFile)
 		if err == io.EOF {
 			break
 		}
@@ -126,7 +126,7 @@ func sendFile(conn *net.TCPConn) {
 	b := []byte("Blah-Blah")
 	file.Write(b)
 	file.Seek(0,0)
-	err = os.Truncate("deliriumONE.txt", 8192)
+	err = os.Truncate("deliriumONE.txt", 81920000000)
 	if err != nil {
 		fmt.Println("Truncate error ", err.Error())
 	}
