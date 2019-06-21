@@ -159,22 +159,4 @@ func sendFile(conn *net.TCPConn) {
 	}
 }
 
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
